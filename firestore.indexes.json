@@ -1,0 +1,29 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "entrevistas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "usuarioId", "order": "ASCENDING" },
+        { "fieldPath": "fechaActividad", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "entrevistas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ecosistema", "order": "ASCENDING" },
+        { "fieldPath": "fechaActividad", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "entrevistas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "numeroExpediente", "order": "ASCENDING" },
+        { "fieldPath": "numeroSeguimiento", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

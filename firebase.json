@@ -1,0 +1,50 @@
+{
+  "auth": {
+    "providers": {
+      "googleSignIn": {
+        "oAuthBrandDisplayName": "TID Agent Conversacional",
+        "supportEmail": "vitrinawebsolutions@gmail.com",
+        "authorizedRedirectUris": [
+          "https://tid-agent.firebaseapp.com/__/auth/handler",
+          "http://localhost:3000",
+          "http://localhost:5173",
+          "http://localhost:8080",
+          "http://127.0.0.1:3000"
+        ]
+      }
+    }
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ],
+    "headers": [
+      {
+        "source": "**",
+        "headers": [
+          {
+            "key": "Cross-Origin-Opener-Policy",
+            "value": "same-origin-allow-popups"
+          },
+          {
+            "key": "Permissions-Policy",
+            "value": "microphone=*"
+          }
+        ]
+      }
+    ]
+  }
+}

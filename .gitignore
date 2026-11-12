@@ -1,0 +1,13 @@
+# Dependencias
+node_modules/
+.npm-cache/
+
+# Logs de Firebase
+firebase-debug.log
+firebase-debug.*.log
+firestore-debug.log
+
+# Caché local y entorno
+.firebase/
+.DS_Store
+Thumbs.db

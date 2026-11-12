@@ -1,0 +1,27 @@
+{
+  "name": "tid-agent-conversational-voice",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Agente Conversacional con Voz Humana (6 Registros Vocales) y Cerebro en Firebase Firestore con Google Sign-In",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve . -l 3000",
+    "deploy:rules": "npx firebase-tools deploy --only firestore:rules --project tid-agent",
+    "deploy:hosting": "npx firebase-tools deploy --only hosting --project tid-agent"
+  },
+  "keywords": [
+    "antigravity",
+    "firebase",
+    "firestore",
+    "google-auth",
+    "conversational-ai",
+    "speech-synthesis",
+    "voice-agent",
+    "vocal-registers"
+  ],
+  "author": "Antigravity & Google DeepMind",
+  "license": "MIT",
+  "dependencies": {
+    "firebase": "^10.13.0"
+  }
+}

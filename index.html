@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TID-Agent | Agente Conversacional con Voz Humana & Firebase</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdfa',
+              500: '#14b8a6',
+              600: '#0d9488',
+              900: '#134e4a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="css/styles.css">
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎙️</text></svg>">
+</head>
+<body class="bg-slate-950 text-slate-100 flex flex-col min-h-screen selection:bg-cyan-500 selection:text-white">
+
+  <!-- ========================================================================= -->
+  <!-- BARRA SUPERIOR (NAVBAR)                                                  -->
+  <!-- ========================================================================= -->
+  <header class="sticky top-0 z-40 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 px-4 lg:px-8 py-3">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+      
+      <!-- Marca / Logo -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 via-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z" />
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-extrabold text-lg text-white tracking-tight">TID-Agent</h1>
+            <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800">Cerebro Firebase</span>
+          </div>
+          <p class="text-[11px] text-slate-400">Voz Humana en 6 Registros & Ecosistemas Adaptables</p>
+        </div>
+      </div>
+
+      <!-- Selector Rápido de Identidad en Header -->
+      <div id="header-identity-selector" class="hidden md:flex items-center">
+        <!-- Generado dinámicamente -->
+      </div>
+
+      <!-- Acciones de Usuario y Firebase -->
+      <div class="flex items-center gap-3">
+        <!-- Indicador de Estado de Firebase -->
+        <div id="firebase-status-badge">
+          <!-- Generado por JS -->
+        </div>
+
+        <!-- Google Sign-In Container -->
+        <div id="auth-logged-out">
+          <button id="btn-google-login" class="flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-white text-slate-900 hover:bg-slate-100 transition shadow-sm">
+            <svg class="w-4 h-4" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+            <span>Iniciar con Google</span>
+          </button>
+        </div>
+
+        <div id="auth-logged-in" class="hidden flex items-center gap-2">
+          <div class="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-slate-800/80 border border-slate-700">
+            <img id="user-avatar" src="" class="w-7 h-7 rounded-full object-cover">
+            <div class="text-left hidden sm:block">
+              <div id="user-name" class="text-xs font-semibold text-white truncate max-w-[120px]">Usuario</div>
+              <div id="user-expediente" class="text-[10px] text-cyan-400 font-mono">EXP-0000</div>
+            </div>
+          </div>
+          <button id="btn-logout" title="Cerrar Sesión" class="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Botón Ajustes -->
+        <button id="btn-open-settings" title="Configurar API Keys y Firebase" class="p-2 text-slate-400 hover:text-cyan-400 rounded-lg hover:bg-slate-800 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Pestañas Principales -->
+    <div class="max-w-7xl mx-auto flex items-center gap-2 mt-3 pt-2 border-t border-slate-800/60 overflow-x-auto">
+      <button data-tab-target="conversacion" class="tab-btn active-tab">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+        <span>Modo Conversacional</span>
+      </button>
+      <button data-tab-target="admin" class="tab-btn">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+        <span>Panel Administrador (Rostros & Voz)</span>
+      </button>
+      <button data-tab-target="expedientes" class="tab-btn">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        <span>Expedientes y Entrevistas</span>
+      </button>
+      <button data-tab-target="estadisticas" class="tab-btn">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        <span>Estadísticas Semanales</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- CONTENIDO PRINCIPAL                                                      -->
+  <!-- ========================================================================= -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-8">
+
+    <!-- --------------------------------------------------------------------- -->
+    <!-- TAB 1: SESIÓN CONVERSACIONAL                                          -->
+    <!-- --------------------------------------------------------------------- -->
+    <div id="tab-conversacion" class="tab-view space-y-6">
+      
+      <!-- Ficha de Perfil del Agente Activo -->
+      <div class="glass-panel overflow-hidden shadow-2xl relative">
+        <!-- Portada -->
+        <div class="h-44 sm:h-56 w-full relative overflow-hidden bg-slate-900">
+          <img id="agent-cover-img" src="" alt="Portada del Agente" class="w-full h-full object-cover opacity-80 transition duration-700 hover:scale-105">
+          <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
+          
+          <div class="absolute top-4 right-4 flex items-center gap-2">
+            <span id="agent-ecosystem-badge" class="px-3 py-1 rounded-full text-xs font-semibold bg-slate-900/90 text-cyan-400 border border-cyan-800/80 backdrop-blur-md shadow-md">
+              Ecosistema
+            </span>
+          </div>
+        </div>
+
+        <!-- Información de Identidad -->
+        <div class="px-6 pb-6 relative -mt-16 sm:-mt-20 flex flex-col sm:flex-row items-center sm:items-end gap-5">
+          <!-- Avatar -->
+          <div class="relative">
+            <img id="agent-avatar-img" src="" alt="Avatar" class="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl object-cover border-4 border-slate-950 shadow-2xl bg-slate-900">
+            <span class="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-slate-950" title="Agente en línea"></span>
+          </div>
+
+          <!-- Detalles -->
+          <div class="flex-1 text-center sm:text-left">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+              <h2 id="agent-name-display" class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Nombre Agente</h2>
+              <span id="agent-role-display" class="inline-block px-3 py-0.5 rounded-full text-xs font-bold bg-blue-950 text-blue-400 border border-blue-800">
+                Profesión
+              </span>
+            </div>
+            <p id="agent-register-badge" class="text-xs text-cyan-400 font-mono mt-1">Registro Vocal: Barítono</p>
+            <p id="agent-behavior-display" class="text-sm text-slate-300 mt-2 max-w-3xl leading-relaxed">Comportamiento del agente...</p>
+
+            <div id="agent-skills-display" class="flex flex-wrap gap-1.5 mt-3 justify-center sm:justify-start">
+              <!-- Habilidades tags -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interfaz Interactiva de Voz y Diálogo -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Columna Izquierda: Visualizador Holográfico de Voz (Alexa / Siri / Jarvis) -->
+        <div class="glass-panel p-6 flex flex-col items-center justify-between min-h-[420px] text-center relative overflow-hidden">
+          
+          <div class="w-full flex justify-between items-center text-xs text-slate-400 mb-2">
+            <span id="mic-status-indicator" class="flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-slate-500"></span> Micrófono en espera
+            </span>
+            <span id="agent-status-indicator" class="font-medium text-cyan-400">Listo para conversar</span>
+          </div>
+
+          <!-- Lienzo de Onda Vocal -->
+          <div class="w-full h-44 relative flex items-center justify-center my-auto">
+            <canvas id="voice-visualizer-canvas" class="w-full h-full"></canvas>
+            <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div class="w-24 h-24 rounded-full bg-cyan-500/10 blur-xl"></div>
+            </div>
+          </div>
+
+          <!-- Texto en vivo detectado por el micrófono -->
+          <p id="live-speech-feedback" class="text-xs text-cyan-300 italic min-h-[24px] px-3"></p>
+
+          <!-- Botones de Acción de Voz -->
+          <div class="w-full pt-4 flex flex-col items-center gap-3">
+            <button id="btn-mic-toggle" class="w-16 h-16 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white flex items-center justify-center shadow-lg shadow-cyan-500/30 hover:scale-105 active:scale-95 transition">
+              <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z" />
+              </svg>
+            </button>
+            <span class="text-xs text-slate-400">Haz clic para hablar (solicitará micrófono)</span>
+
+            <div class="w-full flex gap-2 mt-2">
+              <button id="btn-start-session" class="flex-1 py-2 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+                Nueva Sesión
+              </button>
+              <button id="btn-end-session" class="flex-1 py-2 text-xs font-semibold rounded-lg bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800/80 transition">
+                Finalizar Entrevista
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Columna Derecha: Diálogo Transcrito en Tiempo Real -->
+        <div class="lg:col-span-2 glass-panel p-6 flex flex-col h-[520px]">
+          
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+            <h3 class="font-bold text-sm text-slate-200 flex items-center gap-2">
+              <span>Transcripción de Sesión</span>
+              <span class="text-[10px] px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 font-mono">En vivo</span>
+            </h3>
+            <span class="text-xs text-slate-400">Protocolo: Saludo & Despedida Asistida</span>
+          </div>
+
+          <!-- Contenedor de Mensajes -->
+          <div id="chat-messages-container" class="flex-1 overflow-y-auto pr-2 space-y-4">
+            <!-- Estado Vacío Inicial -->
+            <div id="conversational-empty-state" class="h-full flex flex-col items-center justify-center text-center p-8 text-slate-500">
+              <div class="w-16 h-16 rounded-2xl bg-slate-800/60 flex items-center justify-center mb-3 text-cyan-400">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"/></svg>
+              </div>
+              <h4 class="text-base font-semibold text-slate-300">Modo Conversacional Listo</h4>
+              <p class="text-xs max-w-sm mt-1">Presiona el micrófono o haz clic en "Iniciar Sesión". El agente comenzará con la frase: <em>"Hola, ¿cómo puedo ayudarte?"</em></p>
+            </div>
+
+            <!-- Diálogo en activo -->
+            <div id="conversational-active-state" class="hidden space-y-4"></div>
+          </div>
+
+          <!-- Formulario de Entrada por Teclado Alternativa -->
+          <form id="chat-input-form" class="mt-4 pt-3 border-t border-slate-800 flex gap-2">
+            <input type="text" id="chat-text-input" placeholder="O escribe tu mensaje aquí..." class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500">
+            <button type="submit" class="px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-sm transition">
+              Enviar
+            </button>
+          </form>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- --------------------------------------------------------------------- -->
+    <!-- TAB 2: PANEL ADMINISTRADOR (GESTIÓN DE ROSTROS Y VOZ)                 -->
+    <!-- --------------------------------------------------------------------- -->
+    <div id="tab-admin" class="tab-view hidden space-y-6">
+      
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h2 class="text-xl font-bold text-white">Panel Administrador: Ecosistema y Rostros</h2>
+          <p class="text-xs text-slate-400">Edita la voz humana (6 registros + barra de adaptación), imagen de perfil, portada, habilidades y comportamiento con sincronización inmediata a Firebase Firestore.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="btn-sync-all-firebase" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-400 border border-cyan-800/80 text-xs font-bold transition shadow-sm" title="Escribe todas las identidades directamente a la colección 'identidades' en Cloud Firestore">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+            <span>Crear/Sincronizar en Firebase</span>
+          </button>
+          <button id="btn-new-identity" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold transition shadow-lg shadow-cyan-500/20">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            <span>Nuevo Rostro / Identidad</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Lista de Rostros Creados -->
+        <div class="glass-panel p-5 space-y-3">
+          <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Rostros del Cerebro Central</h3>
+          <div id="admin-identities-list" class="space-y-2 max-h-[580px] overflow-y-auto pr-1">
+            <!-- Renderizado dinámico -->
+          </div>
+        </div>
+
+        <!-- Editor Completo de Identidad y Voz -->
+        <div class="lg:col-span-2 glass-panel p-6">
+          <h3 id="admin-form-title" class="text-base font-bold text-white mb-4 border-b border-slate-800 pb-2">Editar Identidad</h3>
+          
+          <form id="admin-identity-form" class="space-y-5">
+            
+            <!-- Fila 1: Nombre, Género y Profesión -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Nombre / Seudónimo</label>
+                <input type="text" id="admin-name" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-cyan-500">
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Género</label>
+                <select id="admin-gender" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-cyan-500">
+                  <option value="femenino">Femenino</option>
+                  <option value="masculino">Masculino</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Profesión / Carrera</label>
+                <select id="admin-profession" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-cyan-500">
+                  <option value="Terapeuta">Terapeuta</option>
+                  <option value="Coach">Coach</option>
+                  <option value="Consultor">Consultor</option>
+                  <option value="Maestro">Maestro</option>
+                  <option value="Instructor">Instructor</option>
+                  <option value="Consejero">Consejero</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Fila 2: SELECCIÓN DE LOS 6 REGISTROS VOCALES HUMANOS -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-2">Voz Humana: 6 Registros Vocales</label>
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                
+                <!-- Bajo -->
+                <label class="block">
+                  <input type="radio" name="admin-voice-register" value="Bajo" class="hidden">
+                  <div class="register-card">
+                    <span class="text-xs font-bold text-blue-400">Bajo</span>
+                    <span class="text-[10px] text-slate-400">Masculino grave (80-140 Hz)</span>
+                    <span class="text-[9px] text-slate-500 mt-1">Profundo, calmante</span>
+                  </div>
+                </label>
+
+                <!-- Barítono -->
+                <label class="block">
+                  <input type="radio" name="admin-voice-register" value="Barítono" class="hidden">
+                  <div class="register-card">
+                    <span class="text-xs font-bold text-cyan-400">Barítono</span>
+                    <span class="text-[10px] text-slate-400">Masculino medio (100-180 Hz)</span>
+                    <span class="text-[9px] text-slate-500 mt-1">Cálido, persuasivo</span>
+                  </div>
+                </label>
+
+                <!-- Tenor -->
+                <label class="block">
+                  <input type="radio" name="admin-voice-register" value="Tenor" class="hidden">
+                  <div class="register-card">
+                    <span class="text-xs font-bold text-emerald-400">Tenor</span>
+                    <span class="text-[10px] text-slate-400">Masculino agudo (140-260 Hz)</span>
+                    <span class="text-[9px] text-slate-500 mt-1">Brillante, pedagógico</span>
+                  </div>
+                </label>
+
+                <!-- Contralto -->
+                <label class="block">
+                  <input type="radio" name="admin-voice-register" value="Contralto" class="hidden">
+                  <div class="register-card">
+                    <span class="text-xs font-bold text-purple-400">Contralto</span>
+                    <span class="text-[10px] text-slate-400">Femenino grave (160-320 Hz)</span>
+                    <span class="text-[9px] text-slate-500 mt-1">Empático, terapéutico</span>
+                  </div>
+                </label>
+
+                <!-- Mezzosoprano -->
+                <label class="block">
+                  <input type="radio" name="admin-voice-register" value="Mezzosoprano" class="hidden">
+                  <div class="register-card">
+                    <span class="text-xs font-bold text-pink-400">Mezzosoprano</span>
+                    <span class="text-[10px] text-slate-400">Femenino medio (200-400 Hz)</span>
+                    <span class="text-[9px] text-slate-500 mt-1">Expresivo, profesional</span>
+                  </div>
+                </label>
+
+                <!-- Soprano -->
+                <label class="block">
+                  <input type="radio" name="admin-voice-register" value="Soprano" class="hidden">
+                  <div class="register-card">
+                    <span class="text-xs font-bold text-amber-400">Soprano</span>
+                    <span class="text-[10px] text-slate-400">Femenino agudo (250-550 Hz)</span>
+                    <span class="text-[9px] text-slate-500 mt-1">Luminoso, juvenil</span>
+                  </div>
+                </label>
+
+              </div>
+            </div>
+
+            <!-- Fila 3: BARRA DE ADAPTACIÓN DEL REGISTRO Y VELOCIDAD -->
+            <div class="bg-slate-900/70 p-4 rounded-xl border border-slate-800 space-y-4">
+              <div>
+                <div class="flex justify-between items-center text-xs mb-1">
+                  <span class="font-semibold text-slate-300">Barra de Adaptación de Registro (Micro-afinación de Tono):</span>
+                  <span id="adaptation-value-display" class="font-mono text-cyan-400 font-bold">0 semitonos</span>
+                </div>
+                <input type="range" id="admin-adaptation-slider" min="-10" max="10" step="1" value="0" class="w-full accent-cyan-500 cursor-pointer">
+                <div class="flex justify-between text-[10px] text-slate-500 mt-1">
+                  <span>-10 (Más grave / Profundo)</span>
+                  <span>0 (Tono base)</span>
+                  <span>+10 (Más agudo / Brillante)</span>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-800">
+                <div>
+                  <div class="flex justify-between items-center text-xs mb-1">
+                    <span class="font-semibold text-slate-300">Velocidad de Cadencia:</span>
+                    <span id="speed-value-display" class="font-mono text-cyan-400 font-bold">1.0x</span>
+                  </div>
+                  <input type="range" id="admin-speed-slider" min="0.8" max="1.3" step="0.05" value="1.0" class="w-full accent-blue-500 cursor-pointer">
+                </div>
+
+                <div class="flex items-end">
+                  <button type="button" id="btn-admin-test-voice" class="w-full py-2 px-3 rounded-lg bg-cyan-950/80 hover:bg-cyan-900 text-cyan-300 border border-cyan-800 text-xs font-bold transition flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <span>Probar Voz en Vivo</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Fila 4: Imágenes de Perfil y Portada con Previsualización -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">URL Imagen de Perfil (Avatar)</label>
+                <div class="flex gap-2">
+                  <input type="url" id="admin-avatar-url" placeholder="https://..." class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-cyan-500">
+                  <img id="admin-avatar-preview" src="https://images.unsplash.com/photo-1594824813515-5645d9472e61?auto=format&fit=crop&w=400&q=80" class="w-9 h-9 rounded-lg object-cover border border-slate-700">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">URL Imagen de Portada (Página de Perfil)</label>
+                <div class="flex gap-2">
+                  <input type="url" id="admin-cover-url" placeholder="https://..." class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-cyan-500">
+                  <img id="admin-cover-preview" src="https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=1200&q=80" class="w-14 h-9 rounded-lg object-cover border border-slate-700">
+                </div>
+              </div>
+            </div>
+
+            <!-- Fila 5: Ecosistema y Habilidades -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Ecosistema Principal o Residencia</label>
+                <input type="text" id="admin-ecosystem" placeholder="Ej: Sitio Web Principal, App APK, Campus Virtual" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-cyan-500">
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Habilidades (Separadas por comas)</label>
+                <input type="text" id="admin-skills" placeholder="Ej: Escucha activa, Manejo de estrés, Orientación" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-cyan-500">
+              </div>
+            </div>
+
+            <!-- Fila 6: Comportamiento / Personalidad -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Comportamiento y Directiva Conversacional</label>
+              <textarea id="admin-behavior" rows="3" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-cyan-500 leading-relaxed" placeholder="Define cómo acompaña, su empatía, tono y metodología de respuesta..."></textarea>
+            </div>
+
+            <div class="pt-2 flex justify-end">
+              <button type="submit" id="btn-save-identity" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs transition shadow-lg shadow-emerald-500/20">
+                Guardar Identidad en Firebase
+              </button>
+            </div>
+
+          </form>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- --------------------------------------------------------------------- -->
+    <!-- TAB 3: EXPEDIENTES Y ENTREVISTAS                                      -->
+    <!-- --------------------------------------------------------------------- -->
+    <div id="tab-expedientes" class="tab-view hidden space-y-6">
+      
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h2 class="text-xl font-bold text-white">Colección de Entrevistas y Expedientes</h2>
+          <p class="text-xs text-slate-400">Cada sesión se almacena con el número de expediente del usuario y un número de seguimiento único por entrevista.</p>
+        </div>
+      </div>
+
+      <div class="glass-panel overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-900/90 text-slate-400 uppercase tracking-wider text-[11px] border-b border-slate-800">
+              <tr>
+                <th class="py-3 px-4">Nº Expediente</th>
+                <th class="py-3 px-4">Nº Seguimiento</th>
+                <th class="py-3 px-4">Fecha Actividad</th>
+                <th class="py-3 px-4">Atendido Por</th>
+                <th class="py-3 px-4">Ecosistema</th>
+                <th class="py-3 px-4 text-right">Detalle</th>
+              </tr>
+            </thead>
+            <tbody id="interviews-records-table-body" class="divide-y divide-slate-800/60">
+              <!-- Renderizado dinámico -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- --------------------------------------------------------------------- -->
+    <!-- TAB 4: ESTADÍSTICAS SEMANALES                                         -->
+    <!-- --------------------------------------------------------------------- -->
+    <div id="tab-estadisticas" class="tab-view hidden space-y-6">
+      
+      <div>
+        <h2 class="text-xl font-bold text-white">Estadísticas Semanales de Atención</h2>
+        <p class="text-xs text-slate-400">Métricas de usuarios atendidos en la semana, ecosistemas, objetivos planteados y resultados alcanzados.</p>
+      </div>
+
+      <!-- Tarjetas KPI -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div class="glass-panel p-5 text-center">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Usuarios Únicos (Semana)</span>
+          <div id="stat-weekly-users" class="text-4xl font-extrabold text-cyan-400 mt-2 font-mono">0</div>
+          <span class="text-[10px] text-slate-500">Expedientes distintos atendidos</span>
+        </div>
+
+        <div class="glass-panel p-5 text-center">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Entrevistas Realizadas</span>
+          <div id="stat-weekly-interviews" class="text-4xl font-extrabold text-blue-400 mt-2 font-mono">0</div>
+          <span class="text-[10px] text-slate-500">En los últimos 7 días</span>
+        </div>
+
+        <div class="glass-panel p-5 text-center">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Histórico</span>
+          <div id="stat-total-historic" class="text-4xl font-extrabold text-indigo-400 mt-2 font-mono">0</div>
+          <span class="text-[10px] text-slate-500">Sesiones registradas en Firebase</span>
+        </div>
+      </div>
+
+      <!-- Desglose por Ecosistema y Objetivos/Resultados -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <div class="glass-panel p-5 space-y-3">
+          <h3 class="text-sm font-bold text-white border-b border-slate-800 pb-2">Distribución por Ecosistema</h3>
+          <ul id="stat-ecosystems-list" class="space-y-1">
+            <!-- Renderizado dinámico -->
+          </ul>
+        </div>
+
+        <div class="glass-panel p-5 space-y-4">
+          <div>
+            <h3 class="text-sm font-bold text-white border-b border-slate-800 pb-2 mb-2">Objetivos de la Semana</h3>
+            <ul id="stat-goals-list" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+              <!-- Renderizado dinámico -->
+            </ul>
+          </div>
+
+          <div>
+            <h3 class="text-sm font-bold text-white border-b border-slate-800 pb-2 mb-2">Resultados Alcanzados</h3>
+            <ul id="stat-results-list" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+              <!-- Renderizado dinámico -->
+            </ul>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: DETALLES DE ENTREVISTA                                             -->
+  <!-- ========================================================================= -->
+  <div id="interview-details-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+        <h3 class="text-sm font-bold text-white">Detalle de Sesión Registrada</h3>
+        <button id="btn-close-interview-modal" class="text-slate-400 hover:text-white">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div id="interview-details-content">
+        <!-- Renderizado dinámico -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: AJUSTES & FIREBASE CONFIG                                          -->
+  <!-- ========================================================================= -->
+  <div id="settings-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+      
+      <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <span>Configuración de Firebase y Claves</span>
+        </h3>
+        <button id="btn-close-settings" class="text-slate-400 hover:text-white">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <form id="settings-form" class="space-y-4 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Firebase Project ID (Fijado)</label>
+          <input type="text" value="tid-agent" disabled class="w-full bg-slate-800/60 border border-slate-700 text-slate-400 rounded-lg px-3 py-2 cursor-not-allowed">
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Firebase Web App ID (Fijado)</label>
+          <input type="text" value="1:838989599692:web:0194cf58e8983ab3654369" disabled class="w-full bg-slate-800/60 border border-slate-700 text-slate-400 rounded-lg px-3 py-2 cursor-not-allowed font-mono">
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Firebase Web API Key (Obligatorio para Google Sign-In & Firestore en vivo)</label>
+          <input type="password" id="settings-api-key" placeholder="AIzaSy..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white font-mono focus:border-cyan-500">
+          <p class="text-[10px] text-slate-500 mt-1">Obtén esta clave en Firebase Console > Proyecto tid-agent > Configuración del Proyecto > Clave de API web.</p>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Gemini API Key (Opcional - Para razonamiento conversacional ultra-avanzado)</label>
+          <input type="password" id="settings-gemini-key" placeholder="AIzaSy..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white font-mono focus:border-cyan-500">
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Google Cloud Text-to-Speech API Key (Opcional - Síntesis Neural de Estudio)</label>
+          <input type="password" id="settings-tts-key" placeholder="AIzaSy..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white font-mono focus:border-cyan-500">
+          <p class="text-[10px] text-slate-500 mt-1">Si no se especifica, el sistema utiliza el sintetizador calibrado de alta precisión en los 6 registros.</p>
+        </div>
+
+        <div class="pt-3 flex justify-end gap-2 border-t border-slate-800">
+          <button type="submit" class="px-5 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-bold transition">
+            Guardar Ajustes
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- Script Modular Principal -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
